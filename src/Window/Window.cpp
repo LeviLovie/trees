@@ -9,22 +9,17 @@
 #include "font.hpp"
 using namespace std;
 
-#define TARGET_FPS 60
-
 void Window::Update(bool *debug) {
-    renderWindow->draw(background);
     renderWindow->draw(uibackground);
     renderWindow->draw(uibackgroundborder);
     for (int y = 0; y < worldSizeY; y++) {
         for (int x = 0; x < worldSizeX; x++) {
-            sf::RectangleShape rect(sf::Vector2f(10.0f - 2.0f, 10.0f - 2.0f));
-            rect.setPosition(sf::Vector2f(x * 10.0f + 1.0f, y * 10.0f + 1.0f));
-            rect.setFillColor(sf::Color{
-                static_cast<uint8_t>(((worldData[x][y] >> 16) & 0xFF)),
-                static_cast<uint8_t>(((worldData[x][y] >> 8) & 0xFF)),
-                static_cast<uint8_t>((worldData[x][y] & 0xFF)),
-                255
-            });
+            sf::RectangleShape rect(sf::Vector2f(tileSize - 2.0f, tileSize - 2.0f));
+            rect.setPosition(sf::Vector2f(x * tileSize + 1.0f, y * tileSize + 1.0f));
+            if (worldData[x][y] == 0) {rect.setFillColor(sf::Color{18, 18, 18, 255});}
+            if (worldData[x][y] == 1) {
+                rect.setFillColor(sf::Color{25, 100, 25, 255});
+            }
             renderWindow->draw(rect);
         }
     }
@@ -34,9 +29,6 @@ void Window::Update(bool *debug) {
 void Window::StartUpdateLoop() {
     logger::Log(logger::LEVEL_DEBUG, "Starting main loop");
 
-    const double targetFrameTime = 1000.0 / TARGET_FPS;
-    int iteration = 0;
-    bool debug = false;
     while (renderWindow->isOpen()) {
         chrono::high_resolution_clock::time_point startTime = chrono::high_resolution_clock::now();
         renderWindow->clear();
@@ -54,18 +46,17 @@ void Window::StartUpdateLoop() {
 
         // Sleep and display
         renderWindow->display();
-        iteration++;
-        chrono::high_resolution_clock::time_point endTime = chrono::high_resolution_clock::now();
-        double elapsedTime = chrono::duration<double, milli>(endTime - startTime).count();
-        double sleepTime = targetFrameTime - elapsedTime;
-        int max_possible_fps = static_cast<int>(1000.0 / elapsedTime);
-        if (sleepTime > 0) {this_thread::sleep_for(chrono::milliseconds(static_cast<int>(sleepTime)));}
+        endTime = chrono::high_resolution_clock::now();
+        workTime = chrono::duration<double, milli>(endTime - startTime).count();
+        sleepTime = 1000.0 / FPS - workTime;
+        if (sleepTime > 1) {this_thread::sleep_for(chrono::milliseconds(static_cast<int>(sleepTime)));}
+        FPS = 1000.0 / workTime;
+        if (FPS > MaxFPS) {FPS = MaxFPS;}
         debug_text.setString(
-            "Debug information:\nTarget FPS: " + to_string(TARGET_FPS) + "\n" +
-            "Max update time: " + to_string(targetFrameTime) + "ms\n" +
-            "Max possible fps: " + to_string(max_possible_fps) + "\n" +
-            "Work time: " + to_string(elapsedTime) + "ms\n" +
-            "Sleep time: " + to_string(sleepTime) + "ms\n"
+            "Debug information:\nFPS: " + to_string(FPS) +
+            "\nWork time: " + to_string(workTime) +
+            "ms\nSleep time: " + to_string(sleepTime) +
+            "ms\n"
         );
     }
 }
@@ -87,6 +78,7 @@ Window::Window() : debug_text(font) {
     // GUI
     background = sf::RectangleShape(sf::Vector2f(WindowSizeX, WindowSizeY));
     background.setFillColor(sf::Color{8, 8, 8, 255});
+    renderWindow->draw(background);
 
     uibackground = sf::RectangleShape(sf::Vector2f(WindowSizeX, uiSizeY));
     uibackground.setFillColor(sf::Color{18, 18, 18, 255});
@@ -99,32 +91,30 @@ Window::Window() : debug_text(font) {
     int uiZeroY = WindowSizeY - uiSizeY - 5; 
 
     debug_text.setCharacterSize(14);
-    debug_text.setFillColor(sf::Color::Black);
+    debug_text.setFillColor(sf::Color::White);
     debug_text.setPosition(sf::Vector2f(0.0f, 0.0f));
     logger::Log(logger::LEVEL_DEBUG, "GUI initialized successfully");
 
     // World
     logger::Log(logger::LEVEL_DEBUG, "Initializing world");
-    worldData = new uint32_t*[worldSizeX];
+    worldData = new int*[worldSizeX];
     for (int x = 0; x < worldSizeX; x++) {
-        worldData[x] = new uint32_t[worldSizeY];
+        worldData[x] = new int[worldSizeY];
     }
 
     for (int y = 0; y < worldSizeY; y++) {
         for (int x = 0; x < worldSizeX; x++) {
-            worldData[x][y] = 0x000000;
+            worldData[x][y] = 0;
         }
     }
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dis_color(0.0, 16777215);
-    std::uniform_real_distribution<float> dis_float(0.0, 1.0);
+    std::uniform_real_distribution<float> dis(0.0, 1.0);
     for (int y = 0; y < worldSizeY; y++) {
         for (int x = 0; x < worldSizeX; x++) {
-            uint32_t color = static_cast<uint32_t>(dis_color(gen));
-            if (dis_float(gen) > 0.5) {
-                worldData[x][y] = color;
+            if (dis(gen) > 0.5) {
+                worldData[x][y] = 1;
             }
         }
     }

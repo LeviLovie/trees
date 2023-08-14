@@ -8,6 +8,9 @@ class Window {
     public:
         Window();
         void StartUpdateLoop();
+
+        int MaxFPS = 30;
+        int FPS;
     private:
         void Update(bool* debug);
 
@@ -15,14 +18,15 @@ class Window {
         int WindowSizeY = 720;
         int uiSizeY = 100;
 
-        int worldSizeX = WindowSizeX / 10;
-        int worldSizeY = (WindowSizeY - uiSizeY) / 10;
-        uint32_t** worldData;
+        int tileSize = 20;
+        int worldSizeX = WindowSizeX / tileSize;
+        int worldSizeY = (WindowSizeY - uiSizeY) / tileSize;
+        int** worldData;
         
         sf::RenderWindow* renderWindow;
         chrono::high_resolution_clock::time_point startTime, endTime;
-        double elapsedTime, sleepTime;
-        int fps;
+        double workTime, sleepTime;
+
         bool debug;
 
         sf::RectangleShape background;
