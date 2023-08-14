@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <random>
 #include <SFML/Graphics.hpp>
 #include "../logger.hpp"
 #include "font.hpp"
@@ -12,6 +13,21 @@ using namespace std;
 
 void Window::Update(bool *debug) {
     renderWindow->draw(background);
+    renderWindow->draw(uibackground);
+    renderWindow->draw(uibackgroundborder);
+    for (int y = 0; y < worldSizeY; y++) {
+        for (int x = 0; x < worldSizeX; x++) {
+            sf::RectangleShape rect(sf::Vector2f(10.0f - 2.0f, 10.0f - 2.0f));
+            rect.setPosition(sf::Vector2f(x * 10.0f + 1.0f, y * 10.0f + 1.0f));
+            rect.setFillColor(sf::Color{
+                static_cast<uint8_t>(((worldData[x][y] >> 16) & 0xFF)),
+                static_cast<uint8_t>(((worldData[x][y] >> 8) & 0xFF)),
+                static_cast<uint8_t>((worldData[x][y] & 0xFF)),
+                255
+            });
+            renderWindow->draw(rect);
+        }
+    }
     if (*debug) {renderWindow->draw(debug_text);}
 }
 
@@ -68,11 +84,49 @@ Window::Window() : debug_text(font) {
         exit(1);
     }
 
+    // GUI
     background = sf::RectangleShape(sf::Vector2f(WindowSizeX, WindowSizeY));
-    background.setFillColor(sf::Color::White);
+    background.setFillColor(sf::Color{8, 8, 8, 255});
+
+    uibackground = sf::RectangleShape(sf::Vector2f(WindowSizeX, uiSizeY));
+    uibackground.setFillColor(sf::Color{18, 18, 18, 255});
+    uibackground.setPosition(sf::Vector2f(0.0f, WindowSizeY - uiSizeY));
+
+    uibackgroundborder = sf::RectangleShape(sf::Vector2f(WindowSizeX, 5.0f));
+    uibackgroundborder.setFillColor(sf::Color{5, 5, 5, 255});
+    uibackgroundborder.setPosition(sf::Vector2f(0.0f, WindowSizeY - uiSizeY));
+
+    int uiZeroY = WindowSizeY - uiSizeY - 5; 
 
     debug_text.setCharacterSize(14);
     debug_text.setFillColor(sf::Color::Black);
     debug_text.setPosition(sf::Vector2f(0.0f, 0.0f));
     logger::Log(logger::LEVEL_DEBUG, "GUI initialized successfully");
+
+    // World
+    logger::Log(logger::LEVEL_DEBUG, "Initializing world");
+    worldData = new uint32_t*[worldSizeX];
+    for (int x = 0; x < worldSizeX; x++) {
+        worldData[x] = new uint32_t[worldSizeY];
+    }
+
+    for (int y = 0; y < worldSizeY; y++) {
+        for (int x = 0; x < worldSizeX; x++) {
+            worldData[x][y] = 0x000000;
+        }
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis_color(0.0, 16777215);
+    std::uniform_real_distribution<float> dis_float(0.0, 1.0);
+    for (int y = 0; y < worldSizeY; y++) {
+        for (int x = 0; x < worldSizeX; x++) {
+            uint32_t color = static_cast<uint32_t>(dis_color(gen));
+            if (dis_float(gen) > 0.5) {
+                worldData[x][y] = color;
+            }
+        }
+    }
+    logger::Log(logger::LEVEL_DEBUG, "World initialized successfully");
 }

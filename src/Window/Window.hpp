@@ -8,11 +8,16 @@ class Window {
     public:
         Window();
         void StartUpdateLoop();
+    private:
+        void Update(bool* debug);
 
         int WindowSizeX = 1280;
         int WindowSizeY = 720;
-    private:
-        void Update(bool* debug);
+        int uiSizeY = 100;
+
+        int worldSizeX = WindowSizeX / 10;
+        int worldSizeY = (WindowSizeY - uiSizeY) / 10;
+        uint32_t** worldData;
         
         sf::RenderWindow* renderWindow;
         chrono::high_resolution_clock::time_point startTime, endTime;
@@ -21,6 +26,8 @@ class Window {
         bool debug;
 
         sf::RectangleShape background;
+        sf::RectangleShape uibackground;
+        sf::RectangleShape uibackgroundborder;
 
         sf::Font font;
         sf::Text debug_text;
