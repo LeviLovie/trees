@@ -15,6 +15,7 @@ add_executable(trees ${SOURCES})
 add_subdirectory(${CMAKE_SOURCE_DIR}/SFML)
 include_directories(${CMAKE_SOURCE_DIR}/SFML/include)
 link_directories(${CMAKE_SOURCE_DIR}/SFML/lib)
+target_link_libraries(trees sfml-graphics sfml-window sfml-system)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

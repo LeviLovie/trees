@@ -9,18 +9,18 @@ class Window {
         Window();
         void StartUpdateLoop();
 
-        int MaxFPS = 30;
+        static const int MaxFPS = 30;
         int FPS;
     private:
         void Update(bool* debug);
 
-        int WindowSizeX = 1280;
-        int WindowSizeY = 720;
-        int uiSizeY = 100;
+        static const int WindowSizeX = 1280;
+        static const int WindowSizeY = 720;
+        static const int uiSizeY = 100;
 
-        int tileSize = 20;
-        int worldSizeX = WindowSizeX / tileSize;
-        int worldSizeY = (WindowSizeY - uiSizeY) / tileSize;
+        static const int tileSize = 20;
+        static const int worldSizeX = WindowSizeX / tileSize;
+        static const int worldSizeY = (WindowSizeY - uiSizeY) / tileSize;
         int** worldData;
         
         sf::RenderWindow* renderWindow;

@@ -16,9 +16,9 @@ void Window::Update(bool *debug) {
         for (int x = 0; x < worldSizeX; x++) {
             sf::RectangleShape rect(sf::Vector2f(tileSize - 2.0f, tileSize - 2.0f));
             rect.setPosition(sf::Vector2f(x * tileSize + 1.0f, y * tileSize + 1.0f));
-            if (worldData[x][y] == 0) {rect.setFillColor(sf::Color{18, 18, 18, 255});}
+            if (worldData[x][y] == 0) {rect.setFillColor(sf::Color(18, 18, 18, 255));}
             if (worldData[x][y] == 1) {
-                rect.setFillColor(sf::Color{25, 100, 25, 255});
+                rect.setFillColor(sf::Color(25, 100, 25, 255));
             }
             renderWindow->draw(rect);
         }
@@ -61,11 +61,12 @@ void Window::StartUpdateLoop() {
     }
 }
 
-Window::Window() : debug_text(font) {
+Window::Window() {
     logger::Log(logger::LEVEL_DEBUG, "Constructing Window");
 
     logger::Log(logger::LEVEL_DEBUG, "Initializing SFML Window");
-    renderWindow = new sf::RenderWindow(sf::VideoMode(sf::Vector2u(WindowSizeX, WindowSizeY)), "Trees simulation", sf::Style::Titlebar | sf::Style::Close);
+    renderWindow = new sf::RenderWindow(sf::VideoMode(), "Trees simulation", sf::Style::Titlebar | sf::Style::Close);
+    renderWindow->setSize(sf::Vector2u(WindowSizeX, WindowSizeY));
     logger::Log(logger::LEVEL_DEBUG, "SFML Window initialized successfully");
 
     logger::Log(logger::LEVEL_DEBUG, "Initializing GUI");
@@ -77,19 +78,21 @@ Window::Window() : debug_text(font) {
 
     // GUI
     background = sf::RectangleShape(sf::Vector2f(WindowSizeX, WindowSizeY));
-    background.setFillColor(sf::Color{8, 8, 8, 255});
+    background.setFillColor(sf::Color(8, 8, 8, 255));
     renderWindow->draw(background);
 
     uibackground = sf::RectangleShape(sf::Vector2f(WindowSizeX, uiSizeY));
-    uibackground.setFillColor(sf::Color{18, 18, 18, 255});
+    uibackground.setFillColor(sf::Color(18, 18, 18, 255));
     uibackground.setPosition(sf::Vector2f(0.0f, WindowSizeY - uiSizeY));
 
     uibackgroundborder = sf::RectangleShape(sf::Vector2f(WindowSizeX, 5.0f));
-    uibackgroundborder.setFillColor(sf::Color{5, 5, 5, 255});
+    uibackgroundborder.setFillColor(sf::Color(5, 5, 5, 255));
     uibackgroundborder.setPosition(sf::Vector2f(0.0f, WindowSizeY - uiSizeY));
 
     int uiZeroY = WindowSizeY - uiSizeY - 5; 
 
+    debug_text = sf::Text();
+    debug_text.setFont(font);
     debug_text.setCharacterSize(14);
     debug_text.setFillColor(sf::Color::White);
     debug_text.setPosition(sf::Vector2f(0.0f, 0.0f));
