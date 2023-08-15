@@ -67,6 +67,8 @@ Window::Window() {
     logger::Log(logger::LEVEL_DEBUG, "Initializing SFML Window");
     renderWindow = new sf::RenderWindow(sf::VideoMode(), "Trees simulation", sf::Style::Titlebar | sf::Style::Close);
     renderWindow->setSize(sf::Vector2u(WindowSizeX, WindowSizeY));
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    renderWindow->setPosition(sf::Vector2i(desktop.width/2 - renderWindow->getSize().x/2, desktop.height/2 - renderWindow->getSize().y/2));
     logger::Log(logger::LEVEL_DEBUG, "SFML Window initialized successfully");
 
     logger::Log(logger::LEVEL_DEBUG, "Initializing GUI");
